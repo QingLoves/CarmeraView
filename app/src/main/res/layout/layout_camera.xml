@@ -10,8 +10,7 @@
             android:id="@+id/surface"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-        <com.example.team.carmeraview.HenCoderView
-            android:id="@+id/coderView"
+        <com.example.team.carmeraview.view.CameraRectView
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
         <Button

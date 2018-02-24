@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.camera:
                 intent.setClass(this,CameraActivity.class);
                 startActivity(intent);
+                finish();
                 break;
             case R.id.video:
                 intent.setClass(this,VideoActivity.class);

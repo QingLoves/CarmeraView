@@ -110,12 +110,12 @@ public class VideoView extends LinearLayout implements SurfaceHolder.Callback,Me
         }
         Camera.Parameters parameters = camera.getParameters();//获取相机设置对象
         //这里第三个参数为最小尺寸 getPropPreviewSize方法会对从最小尺寸开始升序排列 取出所有支持尺寸的最小尺寸
-        Camera.Size previewSize = CameraUtil.getInstance().getPropVideoSize(parameters.getSupportedVideoSizes(), screenHeight);
+      /*  Camera.Size previewSize = CameraUtil.getInstance().getPropVideoSize(parameters.getSupportedVideoSizes(), screenHeight);
         parameters.setPreviewSize(previewSize.width,previewSize.height);//设置预览尺寸
-        Log.e("预览",previewSize.width+":"+previewSize.height);//1920*1080
-        Camera.Size pictureSize  = CameraUtil.getInstance().getPropPictureSize(parameters.getSupportedPictureSizes(),previewSize.width);
-        parameters.setPictureSize(pictureSize.width,pictureSize.height);//设置照片尺寸//1920*1080
-        Log.e("尺寸",pictureSize.width+":"+pictureSize.height);
+        Log.e("预览",previewSize.width+":"+previewSize.height);//1920*1080*/
+       // Camera.Size pictureSize  = CameraUtil.getInstance().getPropPictureSize(parameters.getSupportedPictureSizes(),previewSize.width);
+       /* parameters.setPictureSize(pictureSize.width,pictureSize.height);//设置照片尺寸//1920*1080
+        Log.e("尺寸",pictureSize.width+":"+pictureSize.height);*/
         parameters.set("orientation", "portrait");
         int maxZoom = parameters.getMaxZoom();
         Log.e("maxZoom",maxZoom+"");
@@ -130,14 +130,14 @@ public class VideoView extends LinearLayout implements SurfaceHolder.Callback,Me
         if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         }
-        FrameLayout.LayoutParams params =new FrameLayout.LayoutParams(pictureSize.height, pictureSize.width);
+       /* FrameLayout.LayoutParams params =new FrameLayout.LayoutParams(pictureSize.height, pictureSize.width);
         surfaceView.setLayoutParams(params);
         camera.cancelAutoFocus();
         camera.setParameters(parameters);
         camera.setDisplayOrientation(CameraUtil.getInstance().setCameraDisplayOrientation(context,CameraID));
         camera.startPreview();
         mCamera.unlock();
-        initMediaRecorder(camera,pictureSize,holder);
+        initMediaRecorder(camera,pictureSize,holder);*/
     }
 
     //初始化视频参数
@@ -174,6 +174,7 @@ public class VideoView extends LinearLayout implements SurfaceHolder.Callback,Me
     }
     //开始拍照
     public void startPlay(){
+        //releaseCamera();
         if (mCamera != null){
            // mCamera.autoFocus(null,null,this);
         }
@@ -240,11 +241,9 @@ public class VideoView extends LinearLayout implements SurfaceHolder.Callback,Me
     //重新预览
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        releaseCamera();
-        if (mCamera == null){
-            mCamera = initCamera(CameraID);
-        }
-        setCameraDistinguis(mCamera,mSurfaceHolder);
+        /*releaseCamera();
+        mCamera = initCamera(CameraID);
+        setCameraDistinguis(mCamera,mSurfaceHolder);*/
     }
 
     //结束预览
@@ -266,7 +265,7 @@ public class VideoView extends LinearLayout implements SurfaceHolder.Callback,Me
 
     //获取系统时间
     private String getTime(){
-        SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd hh-mm-ss");
         String  date  =  sDateFormat.format(new java.util.Date());
         return date;
     }
@@ -286,6 +285,9 @@ public class VideoView extends LinearLayout implements SurfaceHolder.Callback,Me
     public void onPictureTaken(byte[] data, Camera camera) {
 
     }
+
+
+
 
 }
 

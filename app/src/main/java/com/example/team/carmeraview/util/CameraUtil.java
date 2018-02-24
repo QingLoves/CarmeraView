@@ -6,6 +6,7 @@ package com.example.team.carmeraview.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.hardware.Camera;
@@ -19,15 +20,16 @@ import java.util.Comparator;
 import java.util.List;
 
 public class CameraUtil {
-    //降序
-    private CameraDropSizeComparator dropSizeComparator = new CameraDropSizeComparator();
-    //升序
-    private CameraAscendSizeComparator ascendSizeComparator = new CameraAscendSizeComparator();
-    private static CameraUtil myCamPara = null;
 
+    private static final String TAG = CameraUtil.class.getName();
+    private static CameraUtil myCamPara = null;
+    private static final int DEFAULT_PHOTO_WIDTH = 1920;
+    private static final int DEFAULT_PHOTO_HEIGHT = 1080;
     private CameraUtil() {
 
     }
+
+
 
     public static CameraUtil getInstance() {
         if (myCamPara == null) {
@@ -45,33 +47,7 @@ public class CameraUtil {
         return info.orientation;
     }
 
-    /**
-     * 获取所有支持的返回视频尺寸
-     *
-     * @param list
-     * @param minHeight
-     * @return
-     */
-    public Size getPropVideoSize(List<Size> list, int minHeight) {
-        Collections.sort(list, ascendSizeComparator);
-        Log.e("minHeight",minHeight+"");
-        for (Size size : list) {
-            Log.e("Movie", "videoSize size.width=" + size.width + "  size.height=" + size.height);
-        }
-        int i = 0;
-        for (Size s : list) {
-            Log.e("s", "s s.width=" + s.width + "  s.height=" + s.height);
-            if ((s.width >= minHeight)) {
-                Log.e("height",s.height+"");
-                break;
-            }
-            i++;
-        }
-        if (i == list.size()) {
-            i = 0;//如果没找到，就选最小的size
-        }
-        return list.get(i);
-    }
+
 
     /**
      * 保证预览方向正确
@@ -132,157 +108,11 @@ public class CameraUtil {
         return resizedBitmap;
     }
 
-    /**
-     * 获取所有支持的预览尺寸
-     *
-     * @param list
-     * @param minWidth
-     * @return
-     */
-    public Size getPropPreviewSize(List<Size> list, int minWidth) {
-        Collections.sort(list, ascendSizeComparator);
-        for (Size size:list){
-            Log.i("支持的预览尺寸", "size.width=" + size.width + "size.height=" + size.height);
-        }
-        int i = 0;
-        for (Size s : list) {
-            if (s.width >= minWidth) {
-                Log.e("width",s.width+"");
-                break;
-            }
-            i++;
-        }
-        if (i == list.size()) {
-            i = 0;//如果没找到，就选最小的size
-        }
-        return list.get(i);
-    }
 
-    /**
-     * 获取所有支持的返回图片尺寸
-     *
-     * @param list
-     * @param th
-     * @param minWidth
-     * @return
-     */
-    public Size getPropPictureSize(List<Size> list, int minWidth) {
-        Collections.sort(list, ascendSizeComparator);
-        for (Size size :list){
-            Log.i("支持的返回图片尺寸", "size.width=" + size.width + "size.height=" + size.height);
-        }
-        int i = 0;
-        for (Size s : list) {
-            if ((s.width >= minWidth)) {
-                Log.e("width",s.width+"");
-                break;
-            }
-            i++;
-        }
-        if (i == list.size()) {
-            i = 0;//如果没找到，就选最小的size
-        }
-        return list.get(i);
-    }
 
-    /**
-     * 获取所有支持的返回视频尺寸
-     *
-     * @param list
-     * @param minHeight
-     * @return
-     */
-    public Size getPropSizeForHeight(List<Size> list, int minHeight) {
-        Collections.sort(list, new CameraAscendSizeComparatorForHeight());
 
-        int i = 0;
-        for (Size s : list) {
-            if ((s.height >= minHeight)) {
-                Log.i("s.height===" , s.height+":"+s.width);
-                break;
-            }
-            i++;
-        }
-        if (i == list.size()) {
-            i = 0;//如果没找到，就选最小的size
-        }
-        return list.get(i);
-    }
 
-    //升序 按照高度
-    public class CameraAscendSizeComparatorForHeight implements Comparator<Size> {
-        public int compare(Size lhs, Size rhs) {
-            if (lhs.height == rhs.height) {
-                return 0;
-            } else if (lhs.height > rhs.height) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-    }
 
-    public boolean equalRate(Size s, float rate) {
-        float r = (float) (s.width) / (float) (s.height);
-        if (Math.abs(r - rate) <= 0.03) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    //降序
-    public class CameraDropSizeComparator implements Comparator<Size> {
-        public int compare(Size lhs, Size rhs) {
-            if (lhs.width == rhs.width) {
-                return 0;
-            } else if (lhs.width < rhs.width) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-
-    }
-
-    //升序
-    public class CameraAscendSizeComparator implements Comparator<Size> {
-        public int compare(Size lhs, Size rhs) {
-            if (lhs.width == rhs.width) {
-                return 0;
-            } else if (lhs.width > rhs.width) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-
-    }
-
-    /**
-     * 打印支持的previewSizes
-     *
-     * @param params
-     */
-    public void printSupportPreviewSize(Camera.Parameters params) {
-        List<Size> previewSizes = params.getSupportedPreviewSizes();
-        for (int i = 0; i < previewSizes.size(); i++) {
-            Size size = previewSizes.get(i);
-        }
-
-    }
-
-    /**
-     * 打印支持的pictureSizes
-     *
-     * @param params
-     */
-    public void printSupportPictureSize(Camera.Parameters params) {
-        List<Size> pictureSizes = params.getSupportedPictureSizes();
-        for (int i = 0; i < pictureSizes.size(); i++) {
-            Size size = pictureSizes.get(i);
-        }
-    }
 
     /**
      * 打印支持的聚焦模式
@@ -395,27 +225,112 @@ public class CameraUtil {
     }
 
 
-    /*public void setCameraDisplayOrientation(Context context,int paramInt, Camera paramCamera){
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        Camera.getCameraInfo(paramInt, info);
-        int rotation = ((WindowManager)context.getSystemService("window")).getDefaultDisplay().getRotation();  //获得显示器件角度
-        int degrees = 0;
-        Log.i("TAG","getRotation's rotation is " + String.valueOf(rotation));
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
+
+    /**
+     * 获取相机Camera对象
+     * @return Camera
+     * */
+    public Camera openCamera(){
+        Camera camera = null;
+        try {
+            camera = Camera.open();
+        }
+        catch (Exception e){
+            Log.e(TAG,"相机打开失败");
+        }
+        return camera;
+    }
+
+    /**
+     * @param int cameraId
+     * @return Camera
+     * */
+    public Camera openCamera(int cameraId){
+        Camera camera = null;
+        try {
+            camera = Camera.open(cameraId);
+
+        }catch (Exception e){
+            Log.e(TAG,"打开指定相机失败");
+        }
+        return camera;
+    }
+
+    /**
+     * 判断相机是否支持
+     * @return boolean
+     * */
+    public boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_CAMERA)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 释放相机资源
+     *
+     * */
+    public void releaseCamera(Camera camera){
+        if (camera != null){
+            camera.setPreviewCallback(null);
+            camera.stopPreview();
+            camera.release();
         }
 
-       int orientionOfCamera = info.orientation;      //获得摄像头的安装旋转角度
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
+    }
+
+    /**
+     * 如包含默认尺寸，则选默认尺寸，如没有，则选最大的尺寸
+     * 规则：在相同比例下，1.优先寻找长宽分辨率相同的->2.找长宽有一个相同的分辨率->3.找最大的分辨率
+     *
+     * @param sizes 尺寸集合
+     * @return 返回合适的尺寸
+     */
+    public Camera.Size getBestSupportedSize(List<Camera.Size> sizes, float screenRatio) {
+        sort(sizes);
+        Camera.Size largestSize = null;
+        int largestArea = 0;
+        for (Camera.Size size : sizes) {
+            if ((float) size.height / (float) size.width == screenRatio) {
+                if (size.width == DEFAULT_PHOTO_WIDTH && size.height == DEFAULT_PHOTO_HEIGHT) {
+                    // 包含特定的尺寸，直接取该尺寸
+                    largestSize = size;
+                    break;
+                } else if (size.height == DEFAULT_PHOTO_HEIGHT || size.width == DEFAULT_PHOTO_WIDTH) {
+                    largestSize = size;
+                    break;
+                }
+                int area = size.height + size.width;
+                if (area > largestArea) {//找出最大的合适尺寸
+                    largestArea = area;
+                    largestSize = size;
+                }
+            } else if (size.height == DEFAULT_PHOTO_HEIGHT || size.width == DEFAULT_PHOTO_WIDTH) {
+                largestSize = size;
+                break;
+            }
         }
-        paramCamera.setDisplayOrientation(result);  //注意前后置的处理，前置是映象画面，该段是SDK文档的标准DEMO
-    }*/
+        if (largestSize == null) {
+            largestSize = sizes.get(sizes.size() - 1);
+        }
+        return largestSize;
+    }
+
+
+    /**
+     * 排序：从大到小
+     *
+     * @param list
+     */
+    private void sort(List<Camera.Size> list) {
+        Collections.sort(list, new Comparator<Camera.Size>() {
+            @Override
+            public int compare(Camera.Size o1, Camera.Size o2) {
+                return o2.width - o1.width;
+            }
+        });
+    }
 }

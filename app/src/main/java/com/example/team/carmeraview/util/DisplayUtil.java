@@ -59,11 +59,11 @@ public class DisplayUtil {
      * @param context
      * @return
      */
-    public static float getScreenHeight(Context context) {
+    public static int getScreenHeight(Context context) {
         return getDisplayMetrics(context).heightPixels;
     }
 
-    public static float getScreenWidth(Context context) {
+    public static int getScreenWidth(Context context) {
         return getDisplayMetrics(context).widthPixels;
     }
 
