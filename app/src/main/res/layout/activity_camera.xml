@@ -11,14 +11,15 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content">
   </com.example.team.carmeraview.CameraView>
-  <com.example.team.carmeraview.view.CameraRectView
-      android:id="@+id/rectView"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent" />
   <com.example.team.carmeraview.view.ShootView
       android:id="@+id/startCamera"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
+  <com.example.team.carmeraview.view.CameraRectView
+      android:id="@+id/rectView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
 
   <ImageView
       android:id="@+id/iv_photo"

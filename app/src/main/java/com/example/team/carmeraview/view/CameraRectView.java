@@ -133,6 +133,9 @@ public class CameraRectView extends View {
                         mIAutoFocus.autoFocus(rect);
                     }
                 }
+                else {
+                    return super.onTouchEvent(event);
+                }
 
 
                 break;
