@@ -30,7 +30,7 @@ public class CameraRectView extends View {
     private Path rectPath;
     private Point centerPoint;
     private int screenWidth,screenHeight;
-    private int radius;
+    private static int range = 300;
     private static final int DEFAULT_LEFT = 50;
     private static final int DEFAULT_TOP = 300;
     private static final int DEAFULT_RIGHT = 50;
@@ -39,6 +39,7 @@ public class CameraRectView extends View {
     private boolean isShow = false;
     private int lastValue;
     private ValueAnimator lineAnimator;
+    private IAutoFocus mIAutoFocus;
     public CameraRectView(Context context) {
         this(context,null);
     }
@@ -56,12 +57,16 @@ public class CameraRectView extends View {
         rectpaint = new Paint();
         rectPath = new Path();
         centerPoint = new Point(screenWidth/2,(DEFAULT_TOP+DEAFULT_BOTTOM)/2);
-        radius = (int) (screenWidth * 0.1);
         rectpaint.setStyle(Paint.Style.STROKE);
         rectpaint.setColor(Color.WHITE);
         rectpaint.setStrokeWidth(3);
         rectpaint.setAntiAlias(true);
     }
+
+    public void setIAutoFocus(IAutoFocus mIAutoFocus){
+        this.mIAutoFocus = mIAutoFocus;
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -70,9 +75,13 @@ public class CameraRectView extends View {
         rectPath.addRect(rect, Path.Direction.CW);
         canvas.drawPath(rectPath,rectpaint);
         if (isShow){
-            canvas.drawCircle(centerPoint.x,centerPoint.y,radius,rectpaint);
-            //rectPath.addCircle(centerPoint.x,centerPoint.y,radius, Path.Direction.CW);
-            //canvas.drawPath(rectPath,rectpaint);
+            int left = centerPoint.x;
+            int top = centerPoint.y;
+            int right =left+ range;
+            int bottom =top+ range;
+            rectpaint.setColor(Color.BLUE);
+            canvas.drawRect(left,top,right,bottom,rectpaint);
+
         }
 
     }
@@ -85,12 +94,37 @@ public class CameraRectView extends View {
                 int x = (int) event.getX();
                 int y = (int) event.getY();
                 lastValue = 0;
-                centerPoint = null;
                 if (x>DEFAULT_LEFT && x<screenWidth-DEAFULT_RIGHT && y>DEFAULT_TOP && y<DEAFULT_BOTTOM){
-                    LogUtil.i("",x+":"+y);
-                    centerPoint = new Point(x, y);
+                    centerPoint = null;
+                    LogUtil.e("",x+":"+y);
+                    int left = x;
+                    int top = y;
+                    left = left-range/2;
+                    top = top-range/2;
+                    if (left<=DEFAULT_LEFT){
+                        left = DEFAULT_LEFT;
+                        LogUtil.e("","left"+left);
+                    }
+                    if (left>=screenWidth-DEAFULT_RIGHT-range){
+                        left = screenWidth-DEAFULT_RIGHT-range;
+                    }
+                    if (top<= DEFAULT_TOP){
+                        top = DEFAULT_TOP;
+                        LogUtil.e("","top"+top);
+                    }
+
+                    if (top>=DEAFULT_BOTTOM-range){
+                        top = DEAFULT_BOTTOM-range;
+                    }
+                    int right =left+ range;
+                    int bottom =top+ range;
+                    Rect rect = new Rect(left,top,right,bottom);
+                    centerPoint = new Point(left, top);
+                    isShow = true;
                     showAnimView();
-                    //invalidate();
+                    if (mIAutoFocus != null){
+                        mIAutoFocus.autoFocus(rect);
+                    }
                 }
 
 
@@ -101,7 +135,6 @@ public class CameraRectView extends View {
     }
 
     private void showAnimView() {
-        isShow = true;
         if (lineAnimator == null) {
             LogUtil.e("","if");
             lineAnimator = ValueAnimator.ofInt(0, 20);
@@ -112,8 +145,9 @@ public class CameraRectView extends View {
                     LogUtil.e("","addUpdateListener");
                     int animationValue = (Integer) animation
                             .getAnimatedValue();
-                    if(lastValue!=animationValue&&radius>=(int) ((screenWidth * 0.1)-20)){
-                        radius = radius - animationValue;
+                    if(lastValue!=animationValue){
+                        LogUtil.e("animationValue",animationValue);
+                      /*  radius = radius - animationValue;*/
                         lastValue = animationValue;
                     }
                     isShow = true;
@@ -128,7 +162,7 @@ public class CameraRectView extends View {
                     isShow = false;
                     lastValue = 0;
                     rectpaint.setColor(Color.WHITE);
-                    radius = (int) (screenWidth * 0.1);
+                    range = 300;
                     invalidate();
                 }
             });
@@ -140,4 +174,10 @@ public class CameraRectView extends View {
             lineAnimator.start();
         }
     }
+
+
+    public interface IAutoFocus{
+        void autoFocus(Rect rect);
+    }
+
 }

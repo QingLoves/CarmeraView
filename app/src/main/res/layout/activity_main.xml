@@ -26,6 +26,7 @@
        />
    <Button
        android:id="@+id/video"
+       android:visibility="gone"
        android:layout_width="100dp"
        android:layout_height="60dp"
        app:layout_constraintLeft_toRightOf="@id/ver_guide"
