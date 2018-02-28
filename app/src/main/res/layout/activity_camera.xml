@@ -15,9 +15,10 @@
       android:id="@+id/rectView"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />
-  <!--  <com.example.team.carmeraview.view.CameraRectView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" /-->>
+  <com.example.team.carmeraview.view.ShootView
+      android:id="@+id/startCamera"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
 
   <ImageView
       android:id="@+id/iv_photo"

@@ -12,14 +12,19 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.Toast;
 
 import com.example.team.carmeraview.util.LogUtil;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by Team丶长相守 on 2018/2/23.
@@ -40,6 +45,7 @@ public class CameraRectView extends View {
     private int lastValue;
     private ValueAnimator lineAnimator;
     private IAutoFocus mIAutoFocus;
+    private Context context;
     public CameraRectView(Context context) {
         this(context,null);
     }
@@ -50,6 +56,7 @@ public class CameraRectView extends View {
 
     public CameraRectView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.context = context;
         Resources resources = context.getResources();
         DisplayMetrics dm = resources.getDisplayMetrics();
         screenWidth = dm.widthPixels;
@@ -179,5 +186,6 @@ public class CameraRectView extends View {
     public interface IAutoFocus{
         void autoFocus(Rect rect);
     }
+
 
 }

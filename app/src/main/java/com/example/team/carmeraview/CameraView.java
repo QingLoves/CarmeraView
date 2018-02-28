@@ -2,9 +2,13 @@ package com.example.team.carmeraview;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -14,7 +18,11 @@ import com.example.team.carmeraview.util.CameraUtil;
 import com.example.team.carmeraview.util.DisplayUtil;
 import com.example.team.carmeraview.util.LogUtil;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,88 +31,89 @@ import java.util.List;
 /**
  * Created by Team丶长相守 on 2017/12/6.
  */
-    public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
-        private static final String TAG = CameraView.class.getName();
-        private CameraUtil cameraUtil;
-        private Camera mCamera;
-        private SurfaceHolder surfaceHolder;
-        private Context context;
-        private int DEFAULT_PHOTO_WIDTH ;
-        private int DEFAULT_PHOTO_HEIGHT ;
+public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
+    private static final String TAG = CameraView.class.getName();
+    private CameraUtil cameraUtil;
+    private Camera mCamera;
+    private SurfaceHolder surfaceHolder;
+    private Context context;
+    private int DEFAULT_PHOTO_WIDTH ;
+    private int DEFAULT_PHOTO_HEIGHT ;
+    private static final String FILE_SUFFIX = ".jpg";
     /**
      * 当前摄像头id
      */
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-        public CameraView(Context context) {
-            this(context,null);
+    public CameraView(Context context) {
+        this(context,null);
+    }
+
+    public CameraView(Context context, AttributeSet attrs) {
+        this(context, attrs,0);
+    }
+
+    public CameraView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        this.context = context;
+        DEFAULT_PHOTO_WIDTH = DisplayUtil.getScreenHeight(context);
+        DEFAULT_PHOTO_HEIGHT = DisplayUtil.getScreenWidth(context);
+        LogUtil.e(TAG,DEFAULT_PHOTO_WIDTH+":"+DEFAULT_PHOTO_HEIGHT);
+        cameraUtil = CameraUtil.getInstance();
+        initCamera();
+    }
+
+
+    private void initCamera(){
+        if ( cameraUtil.checkCameraHardware(context)){
+            mCamera = cameraUtil.openCamera();
         }
 
-        public CameraView(Context context, AttributeSet attrs) {
-            this(context, attrs,0);
+        surfaceHolder = getHolder();
+        surfaceHolder.addCallback(this);
+    }
+
+
+    //开始预览
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        try {
+            mCamera.setPreviewDisplay(holder);
+            setCameraParams(DEFAULT_PHOTO_WIDTH,DEFAULT_PHOTO_HEIGHT);
+            mCamera.startPreview();
+        } catch (IOException e) {
+            LogUtil.e(TAG,"开始预览失败");
+            e.printStackTrace();
         }
 
-        public CameraView(Context context, AttributeSet attrs, int defStyleAttr) {
-            super(context, attrs, defStyleAttr);
-            this.context = context;
-            DEFAULT_PHOTO_WIDTH = DisplayUtil.getScreenHeight(context);;
-            DEFAULT_PHOTO_HEIGHT = DisplayUtil.getScreenWidth(context);
-            LogUtil.e(TAG,DEFAULT_PHOTO_WIDTH+":"+DEFAULT_PHOTO_HEIGHT);
-            cameraUtil = CameraUtil.getInstance();
-            initCamera();
+    }
+
+    //重新预览
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        if (surfaceHolder.getSurface() == null){
+            return;
+        }
+        try {
+            mCamera.stopPreview();
+        }catch (Exception e){
+            e.printStackTrace();
+            LogUtil.e(TAG,"重新预览失败");
+        }
+        try {
+            mCamera.setPreviewDisplay(surfaceHolder);
+            mCamera.startPreview();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
 
-        private void initCamera(){
-            if ( cameraUtil.checkCameraHardware(context)){
-                mCamera = cameraUtil.openCamera();
-            }
+    }
 
-            surfaceHolder = getHolder();
-            surfaceHolder.addCallback(this);
-        }
-
-
-        //开始预览
-        @Override
-        public void surfaceCreated(SurfaceHolder holder) {
-            try {
-                mCamera.setPreviewDisplay(holder);
-                setCameraParams(DEFAULT_PHOTO_WIDTH,DEFAULT_PHOTO_HEIGHT);
-                mCamera.startPreview();
-            } catch (IOException e) {
-                LogUtil.e(TAG,"开始预览失败");
-                e.printStackTrace();
-            }
-
-        }
-
-        //重新预览
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            if (surfaceHolder.getSurface() == null){
-                return;
-            }
-            try {
-                mCamera.stopPreview();
-            }catch (Exception e){
-                e.printStackTrace();
-                LogUtil.e(TAG,"重新预览失败");
-            }
-            try {
-                mCamera.setPreviewDisplay(surfaceHolder);
-                mCamera.startPreview();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-        }
-
-        //停止预览
-        @Override
-        public void surfaceDestroyed(SurfaceHolder holder) {
-            cameraUtil.releaseCamera(mCamera);
-        }
+    //停止预览
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        cameraUtil.releaseCamera(mCamera);
+    }
 
 
     /**
@@ -159,12 +168,7 @@ import java.util.List;
         // 关闪光灯
         parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
 
-        // 横竖屏镜头自动调整
-        if (context.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
-            mCamera.setDisplayOrientation(90);
-        } else {
-            mCamera.setDisplayOrientation(0);
-        }
+        mCamera.setDisplayOrientation(cameraUtil.setCameraDisplayOrientation(context,cameraId));
 
         //相机异常监听
         mCamera.setErrorCallback(new Camera.ErrorCallback() {
@@ -200,22 +204,40 @@ import java.util.List;
 
 
 
-        /**
-         * 拍照回调
-         * */
-        private Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
+    /**
+     * 拍照回调
+     * */
+    private Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
 
+            File fileName = getFileName(context);
+            if (!fileName.exists()){
+                try {
+                    fileName.createNewFile();
+                    FileOutputStream fos = new FileOutputStream(fileName);
+                    BufferedOutputStream bos = new BufferedOutputStream(fos);
+                    bos.write(data);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
+                    bitmap =  rotaingImageView(cameraId,90,bitmap);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG,100,fos);
+                    Log.e("==",bitmap.getWidth()+"");
+                    Log.e("===",bitmap.getHeight()+"");
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        };
 
-        /**
-         * 相机拍摄
-         * */
-        public void capturePicture(){
-            mCamera.takePicture(null,null,mPictureCallback);
         }
+    };
+
+    /**
+     * 相机拍摄
+     * */
+    public void capturePicture(){
+        mCamera.takePicture(null,null,mPictureCallback);
+    }
 
 
     /**
@@ -306,6 +328,34 @@ import java.util.List;
         right = right > 1000 ? 1000 : right;
         bottom = bottom > 1000 ? 1000 : bottom;
         return new Rect(left, top, right, bottom);
+    }
+    private File getFileName(Context context){
+        SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
+        String  date  =  sDateFormat.format(new java.util.Date());
+        File path = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File fileName = new File(path,date+FILE_SUFFIX);
+        LogUtil.e("TAG",fileName.getPath());
+        return fileName;
+    }
+
+    /**
+     * 把相机拍照返回照片转正
+     *
+     * @param angle 旋转角度
+     * @return bitmap 图片
+     */
+    public Bitmap rotaingImageView(int id, int angle, Bitmap bitmap) {
+        //旋转图片 动作
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        //加入翻转 把相机拍照返回照片转正
+        if (id == 1) {
+            matrix.postScale(-1, 1);
+        }
+        // 创建新的图片
+        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return resizedBitmap;
     }
 
 }
